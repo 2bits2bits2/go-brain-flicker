@@ -68,8 +68,15 @@ func getImg(ui *UI) IMG {
 
 // TODO make this more elegant
 func createLayout(gtx layout.Context,
+	th *material.Theme, startButton, stopButton, setButton, aboutButton,
+	scheduleButton, saveScheduleButton, useScheduleButton *widget.Clickable, ui *UI) layout.Dimensions {
 
-	th *material.Theme, startButton, stopButton, setButton, aboutButton *widget.Clickable, ui *UI) layout.Dimensions {
+	// Determine the label for the use schedule button based on the current state
+	useScheduleLabel := "Use Schedule: OFF"
+	if ui.useSchedule {
+		useScheduleLabel = "Use Schedule: ON"
+	}
+
 	return layout.Flex{
 		Axis:      layout.Vertical,
 		Spacing:   layout.SpaceBetween,
@@ -83,7 +90,7 @@ func createLayout(gtx layout.Context,
 			}
 			return layout.Dimensions{Size: gtx.Constraints.Max}
 		}),
-		// Button container
+		// Button container - top row (original buttons)
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				return layout.Flex{
@@ -128,6 +135,47 @@ func createLayout(gtx layout.Context,
 						gtx.Constraints.Min.X = gtx.Dp(100)
 						gtx.Constraints.Min.Y = gtx.Dp(50)
 						return createButton(gtx, th, aboutButton, "About")
+					}),
+				)
+			})
+		}),
+		// Schedule editor container
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return layout.Flex{
+					Axis:      layout.Horizontal,
+					Spacing:   layout.SpaceEvenly,
+					Alignment: layout.Middle,
+				}.Layout(gtx,
+					// Label
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						label := material.Body1(th, "Schedule:")
+						label.Alignment = text.Middle
+						return label.Layout(gtx)
+					}),
+					//space between
+					layout.Rigid(layout.Spacer{Width: unit.Dp(10)}.Layout),
+					// Schedule Editor
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						gtx.Constraints.Min.X = gtx.Dp(300)
+						editor := material.Editor(th, &ui.scheduleEditor, "Example: 33-3;4;44-3")
+						return editor.Layout(gtx)
+					}),
+
+					layout.Rigid(layout.Spacer{Width: unit.Dp(10)}.Layout),
+
+					// Save Schedule button
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						gtx.Constraints.Min.X = gtx.Dp(140)
+						gtx.Constraints.Min.Y = gtx.Dp(50)
+						return createButton(gtx, th, saveScheduleButton, "Save Schedule")
+					}),
+
+					// Use Schedule button
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						gtx.Constraints.Min.X = gtx.Dp(140)
+						gtx.Constraints.Min.Y = gtx.Dp(50)
+						return createButton(gtx, th, useScheduleButton, useScheduleLabel)
 					}),
 				)
 			})
